@@ -7,6 +7,7 @@
 
 [gdbt](http://scikit-learn.org/stable/modules/ensemble.html#classification)
 
-## Q3
+## Q3 
 
 predict .  [GTI](https://en.wikipedia.org/wiki/Global_Terrorism_Index#2017)
+[GPI](https://en.wikipedia.org/wiki/Global_Peace_Index)
