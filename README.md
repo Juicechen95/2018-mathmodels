@@ -1,6 +1,7 @@
 # 2018-mathmodels
 ## XGboost
 [classifier](https://machinelearningmastery.com/develop-first-xgboost-model-python-scikit-learn/)
+https://xgboost.readthedocs.io/en/latest/python/python_api.html
 
 
 ## data_clean
