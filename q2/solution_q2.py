@@ -84,16 +84,14 @@ def gen_groups(dataset):
     print(dataset[:10])
     groups = dataset[dataset[:,0].argsort()]
     ngroup = []
-    group_ids = []
     group_1 = [row[1] for row in groups if row[0] == 1]
-    group_1.insert(0,1)
     print(group_1)
-    if int(len(group_1)) != 1:
+    if int(len(group_1)) != 0:
         ngroup.append(group_1)
     #print(group_1)
     group_id = 2
-    temp = [group_id]
-    tag = int(len(group_1)) - 1
+    temp = []
+    tag = int(len(group_1)) 
     print(tag)
     for row in groups[tag:]:
         #print(row[0])
@@ -104,24 +102,26 @@ def gen_groups(dataset):
             #print(temp)
             ngroup.append(temp)
             group_id = group_id + 1
-            temp = [group_id, row[1]]
+            temp = [row[1]]
         else:
             #print('temp empty when group_id = %d' % group_id)
             group_id = group_id + 1
-            temp = [group_id]
+            temp = []
     print('final goup_id is %d' % group_id)
     
     return ngroup
 
 train_groups = gen_groups(train_no_unknown[:,[-1,0]])
 print(train_groups[0])
+print(len(train_groups))
+    
     
     
 # generate train dataset with pos_pairs, neg_pairs and labels
 # asume we have got group_id and member list, we have a 2d list Groups, index is the groupid, row is all the eventid.
 
 #for each group, generate negtive samples number
-neg_count = 100
+neg_count = 5
 
 def gen_pairs(Groups, idx, neg_count):
     # to generate positive and negtive samples for the idx group
@@ -129,6 +129,9 @@ def gen_pairs(Groups, idx, neg_count):
     pos_pairs = [[x, y ] for idx_x, x in enumerate(Groups[idx]) for idx_y, y in enumerate(Groups[idx]) if idx_x != idx_y]
     num_pos = len(pos_pairs)
     pos_labels = np.ones(num_pos)
+    #print('pos')
+    #print(pos_pairs)
+    #print(pos_labels)
     
     # randomly generate negtive samples
     G = Groups
@@ -138,34 +141,45 @@ def gen_pairs(Groups, idx, neg_count):
     flat_G = [event for g in G for event in g]
     #neg_count = len(flat_G) * neg_percent
     for event in Groups[idx]:
-        neg_idx = np.random.shuffle(list(range(0,neg_count)))
-        print(neg_idx[:10])
-        neg_data = G[neg_idx[:neg_count]]
+        #neg_idx = list(range(0,neg_count))
+        np.random.shuffle(flat_G)
+        #print(neg_idx[:2])
+        neg_data = flat_G[:neg_count]
+        #print('neg_data')
+        #print(neg_data[:2])
         neg_pairs = neg_pairs + [[event, neg_event] for neg_event in neg_data]
     neg_labels = np.ones(len(neg_pairs))
     
-    pairs = pos_pairs + neg_pairs 
-    labels = pos_labels + neg_labels
+    #print('neg')
+    #print(neg_pairs)
+    #print(neg_labels)
+    
+    pairs = pos_pairs + neg_pairs
+    labels = [p for p in pos_labels] + [n for n in neg_labels]
     return pairs, labels
     
-def gen_all_pairs(Groups):
-    data = [gen_pairs(Groups, idx, neg_count) for idx,g in enumerate(Groups)]
-    Data_pairs, Labels = zip(*data)
-    return Data_pairs, Labels
+# def gen_all_pairs(Groups):
+#     data = [gen_pairs(Groups, idx, neg_count) for idx,g in enumerate(Groups)]
+#     Data_pairs, Labels = zip(*data)
+#     return Data_pairs, Labels
 
 def gen_train(Groups):
-    # to gen test_groups and train_groups
-    #
-    #
-    train_pairs, y_train0 = gen_all_pairs(train_groups)
+    data = [gen_pairs(Groups, idx, neg_count) for idx,g in enumerate(Groups) if idx < 10]
+    print(data[:2])
+    train_pairs, y_train0 = zip(*data)
+    print(len(train_pairs))
+    print(len(train_pairs[0]))
+    print(len(y_train0))
+    print(train_pairs[:2])
+    print(y_train0[:2])
     # concate the feature vector of two samples as one convated feature vector
     X_train1 = [np.append(pair[0], pair[1],axis =1) for pair in train_pairs] 
     print('number of x_train1 is %s' % len(X_train1))
     # 正反调换来一遍
-    X_train2 = [np.append(pair[1], pair[0],axis =1) for pair in train_pairs] 
+    #X_train2 = [np.append(pair[1], pair[0],axis =1) for pair in train_pairs] 
     # 两个特征差分试一下
-    X_train = X_train1 + X_train2
-    y_train = y_train0 + y_train0
+    X_train = X_train1 #+ X_train2
+    y_train = y_train0 #+ y_train0
     
     return X_train, y_train
 
